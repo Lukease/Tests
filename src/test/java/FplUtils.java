@@ -32,6 +32,19 @@ public class FplUtils {
     JavascriptExecutor jse;
     Formation currentFormation;
 
+    public void getAllManagersAllGameweeksInfo() {
+        driver.get("https://fantasy.premierleague.com/leagues/30013/standings/c");
+        List<WebElement> leagueTable = driver.findElements(By.className("StandingsRow-fwk48s-0"));
+        List<TeamManager> teamManagerList = new ArrayList<>();
+        for (int i = 0; i < leagueTable.size(); i++) {
+            String teamName = leagueTable.get(i).findElement(By.className("cA-DQBw")).getText();
+            String managerName = driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[2]")).getText().split("\n")[1];
+            Integer totalPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[4]")).getText());
+            String id = driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[2]/a")).getAttribute("href").split("/")[4];
+            teamManagerList.add(new TeamManager(teamName, managerName, totalPoints, id));
+        }
+    }
+
     public HashMap<String, List<Player>> getMyTeam() {
         return myTeam;
     }
@@ -72,7 +85,7 @@ public class FplUtils {
         driver.findElement(By.xpath("//div[@data-testid='pitch']/div[" + (formationsOrder.indexOf(playerOut.getPosition()) + 1) + "]/div[" +
                 +playerOut.getPlayerIndex() + "]/div/div/div/div/button")).click();
         List<WebElement> bench = driver.findElements(By.className("eFjEEk"));
-        bench.get(playerIn.getPlayerIndex()-1).findElements(By.className("fBGUqJ")).get(1).click();
+        bench.get(playerIn.getPlayerIndex() - 1).findElements(By.className("fBGUqJ")).get(1).click();
         driver.findElement(By.className("csDFXJ")).click();
         getTeam();
     }
@@ -107,7 +120,7 @@ public class FplUtils {
     public FplUtils(WebDriver driver) {
         this.driver = driver;
         this.jse = (JavascriptExecutor) driver;
-        initiateTabIndexes();
+       /* initiateTabIndexes();
         initiatePlayerSelectBy();
         positionsIndexes.put(GOALKEEPER, Arrays.asList(2, 3));
         positionsIndexes.put(DEFENDER, Arrays.asList(1, 2, 3, 4, 5));
@@ -115,7 +128,8 @@ public class FplUtils {
         positionsIndexes.put(FORWARD, Arrays.asList(1, 2, 3));
         formationsOrder = Arrays.asList(GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD);
         initiateTeam();
-        getTeam();
+        getTeam();*/
+        getAllManagersAllGameweeksInfo();
     }
 
     private void initiateTeam() {

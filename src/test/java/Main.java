@@ -35,6 +35,12 @@ public class Main {
         driver.findElement(By.className("jYWOpQ")).click();
 
         fplUtils = new FplUtils(driver);
+        /** get information about every Manager Gameweek
+         * 1.  https://fantasy.premierleague.com/leagues/30013/standings/c
+         * 2. get into team informations
+         */
+
+
     }
 
     @Test

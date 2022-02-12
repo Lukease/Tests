@@ -6,6 +6,7 @@ public class FplLeague {
     private int totalPoints;
     private String manager;
 
+
     public FplLeague(String leagueName, String teamName, int rank, int gameWeekPoints, int totalPoints, String manager) {
         this.leagueName = leagueName;
         this.teamName = teamName;

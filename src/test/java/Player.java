@@ -1,10 +1,13 @@
+import java.util.List;
+
 public class Player {
     private double price;
     private  String name;
     private String position;
     private String club;
     private int playerIndex;
-
+    private int overallPoints;
+    private List<PlayerGameweek> gameweekStatistics;
 
     public int getPlayerIndex() {
         return playerIndex;
