@@ -167,6 +167,6 @@ public class Main {
 
     @AfterAll
     static void afterTest() {
-       // driver.quit();
+        driver.quit();
     }
 }

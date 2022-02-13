@@ -8,7 +8,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +30,17 @@ public class FplUtils {
     private final String BENCH = "Bench";
     JavascriptExecutor jse;
     Formation currentFormation;
+
+    public void getGameweekInfo(Integer numberOfGameweek) {
+        driver.get("https://fantasy.premierleague.com/entry/3459998/event/" + numberOfGameweek);
+        List<Player> playersOfGameweek = new ArrayList<>();
+        Integer averageGameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[1]/div[1]/div")).getText());
+        Integer highestGameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[1]/div[2]/div")).getText());
+        driver.get("https://fantasy.premierleague.com/dream-team/" + numberOfGameweek);
+
+        Gameweek gameweek = new Gameweek(averageGameweekPoints, highestGameweekPoints, playersOfGameweek, numberOfGameweek);
+        System.out.println();
+    }
 
     public void getAllManagersAllGameweeksInfo() {
         driver.get("https://fantasy.premierleague.com/leagues/30013/standings/c");
@@ -128,8 +138,9 @@ public class FplUtils {
         positionsIndexes.put(FORWARD, Arrays.asList(1, 2, 3));
         formationsOrder = Arrays.asList(GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD);
         initiateTeam();
-        getTeam();*/
-        getAllManagersAllGameweeksInfo();
+        getTeam();
+        getAllManagersAllGameweeksInfo();*/
+        getGameweekInfo(25);
     }
 
     private void initiateTeam() {
@@ -150,7 +161,6 @@ public class FplUtils {
     }
 
     private void initiateTabIndexes() {
-
         List<WebElement> tabs = null;
         do {
             tabs = driver.findElements(By.xpath("//nav[@role='navigation']/ul/li"));
@@ -187,6 +197,45 @@ public class FplUtils {
             }
             formationIndex++;
         }
+    }
+    private List<Player> getPitchTeam() {
+        WebElement pitch = driver.findElement(By.xpath("//div[@data-testid='pitch']"));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.visibilityOf(pitch.findElement(By.className("Pitch__ElementRow-sc-1mctasb-1"))));
+        List<WebElement> formations = pitch.findElements(By.className("Pitch__ElementRow-sc-1mctasb-1"));
+        List<WebElement> goalkeeperDivs = formations.get(0).findElements(By.className("gAzdNx"));
+        List<WebElement> defendersDivs = formations.get(1).findElements(By.className("gAzdNx"));
+        List<WebElement> midfieldersDivs = formations.get(2).findElements(By.className("gAzdNx"));
+        List<WebElement> forwardsDivs = formations.get(3).findElements(By.className("gAzdNx"));
+        currentFormation = new Formation(defendersDivs.size(), midfieldersDivs.size(), forwardsDivs.size());
+
+        List<Player> team = new ArrayList<>();
+        String goalkeeperName = goalkeeperDivs.get(2).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
+        Player goalkeeper = getPlayerByName(goalkeeperName, true);
+        // todo  get players gamweek points
+        team.add(new Player(goalkeeper.getPrice(), goalkeeperName, GOALKEEPER, goalkeeper.getClub(), 3));
+
+        for (int i = 0; i < currentFormation.getDefenders(); i++) {
+            String playerName = defendersDivs.get(i).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
+            Player player = getPlayerByName(playerName, true);
+            int playerIndex = i + 1;
+            team.add(new Player(player.getPrice(), playerName, DEFENDER, player.getClub(), playerIndex));
+        }
+
+        for (int i = 0; i < currentFormation.getMidfielders(); i++) {
+            String playerName = midfieldersDivs.get(currentFormation.getMidfieldersIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
+            Player player = getPlayerByName(playerName, true);
+            int playerIndex = currentFormation.getMidfieldersIndexes().get(i);
+            team.add(new Player(player.getPrice(), playerName, MIDFIELDER, player.getClub(), playerIndex));
+        }
+
+        for (int i = 0; i < currentFormation.getForwards(); i++) {
+            String playerName = forwardsDivs.get(currentFormation.getForwardsIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
+            Player player = getPlayerByName(playerName, true);
+            int playerIndex = i + 1;
+            team.add(new Player(player.getPrice(), playerName, FORWARD, player.getClub(), playerIndex));
+        }
+        return team;
     }
 
     private void getTeam() {
