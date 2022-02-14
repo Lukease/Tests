@@ -2,12 +2,13 @@ import java.util.List;
 
 public class Player {
     private double price;
-    private  String name;
+    private String name;
     private String position;
     private String club;
     private int playerIndex;
     private int overallPoints;
     private List<PlayerGameweek> gameweekStatistics;
+    private int gameweekPoints;
 
     public int getPlayerIndex() {
         return playerIndex;
@@ -23,6 +24,20 @@ public class Player {
         this.position = position;
         this.club = club;
         this.playerIndex = playerIndex;
+    }
+
+    public Player(String name, String position,  int gameweekPoints) {
+        this.name = name;
+        this.position = position;
+        this.gameweekPoints = gameweekPoints;
+    }
+
+    public int getGameweekPoints() {
+        return gameweekPoints;
+    }
+
+    public void setGameweekPoints(int gameweekPoints) {
+        this.gameweekPoints = gameweekPoints;
     }
 
     public double getPrice() {

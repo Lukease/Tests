@@ -31,15 +31,30 @@ public class FplUtils {
     JavascriptExecutor jse;
     Formation currentFormation;
 
+    public void getLeagueInformation(){
+        driver.get("https://fantasy.premierleague.com/leagues/30013/standings/c");
+        String leagueName = driver.findElement(By.className("Title-sc-9c7mfn-0")).getText();
+        List<FplLeague> teamList = new ArrayList<>();
+        List<WebElement> leagueTable = driver.findElements(By.className("StandingsRow-fwk48s-0"));
+        for (int i = 0; i < leagueTable.size(); i++) {
+            String teamName = leagueTable.get(i).findElement(By.className("cA-DQBw")).getText();
+            Integer totalPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[4]")).getText());
+            Integer rank = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td/div/div")).getText());
+            Integer gameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[3]")).getText());
+            String managerName = driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[2]")).getText().split("\n")[1];
+                    teamList.add(new FplLeague(leagueName,teamName,rank,gameweekPoints,totalPoints,managerName));
+        }
+    }
+
     public void getGameweekInfo(Integer numberOfGameweek) {
         driver.get("https://fantasy.premierleague.com/entry/3459998/event/" + numberOfGameweek);
         List<Player> playersOfGameweek = new ArrayList<>();
         Integer averageGameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[1]/div[1]/div")).getText());
         Integer highestGameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[1]/div[2]/div")).getText());
         driver.get("https://fantasy.premierleague.com/dream-team/" + numberOfGameweek);
-
+        playersOfGameweek = getPitchTeam();
         Gameweek gameweek = new Gameweek(averageGameweekPoints, highestGameweekPoints, playersOfGameweek, numberOfGameweek);
-        System.out.println();
+        System.out.println(gameweek);
     }
 
     public void getAllManagersAllGameweeksInfo() {
@@ -140,7 +155,8 @@ public class FplUtils {
         initiateTeam();
         getTeam();
         getAllManagersAllGameweeksInfo();*/
-        getGameweekInfo(25);
+        //getGameweekInfo(23);
+        getLeagueInformation();
     }
 
     private void initiateTeam() {
@@ -198,6 +214,7 @@ public class FplUtils {
             formationIndex++;
         }
     }
+
     private List<Player> getPitchTeam() {
         WebElement pitch = driver.findElement(By.xpath("//div[@data-testid='pitch']"));
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -211,29 +228,25 @@ public class FplUtils {
 
         List<Player> team = new ArrayList<>();
         String goalkeeperName = goalkeeperDivs.get(2).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
-        Player goalkeeper = getPlayerByName(goalkeeperName, true);
-        // todo  get players gamweek points
-        team.add(new Player(goalkeeper.getPrice(), goalkeeperName, GOALKEEPER, goalkeeper.getClub(), 3));
+        Integer goalkeeperPoints = Integer.parseInt(goalkeeperDivs.get(2).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
+        team.add(new Player(goalkeeperName, GOALKEEPER, goalkeeperPoints));
 
         for (int i = 0; i < currentFormation.getDefenders(); i++) {
             String playerName = defendersDivs.get(i).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
-            Player player = getPlayerByName(playerName, true);
-            int playerIndex = i + 1;
-            team.add(new Player(player.getPrice(), playerName, DEFENDER, player.getClub(), playerIndex));
+            Integer defenderPoints = Integer.parseInt(defendersDivs.get(i).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
+            team.add(new Player(playerName, DEFENDER, defenderPoints));
         }
 
         for (int i = 0; i < currentFormation.getMidfielders(); i++) {
             String playerName = midfieldersDivs.get(currentFormation.getMidfieldersIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
-            Player player = getPlayerByName(playerName, true);
-            int playerIndex = currentFormation.getMidfieldersIndexes().get(i);
-            team.add(new Player(player.getPrice(), playerName, MIDFIELDER, player.getClub(), playerIndex));
+            Integer midfielderPoints = Integer.parseInt(midfieldersDivs.get(currentFormation.getMidfieldersIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
+            team.add(new Player(playerName, MIDFIELDER, midfielderPoints));
         }
 
         for (int i = 0; i < currentFormation.getForwards(); i++) {
             String playerName = forwardsDivs.get(currentFormation.getForwardsIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
-            Player player = getPlayerByName(playerName, true);
-            int playerIndex = i + 1;
-            team.add(new Player(player.getPrice(), playerName, FORWARD, player.getClub(), playerIndex));
+            Integer forwardPoints = Integer.parseInt(forwardsDivs.get(currentFormation.getForwardsIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
+            team.add(new Player(playerName, FORWARD, forwardPoints));
         }
         return team;
     }
