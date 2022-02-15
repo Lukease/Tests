@@ -30,9 +30,49 @@ public class FplUtils {
     private final String BENCH = "Bench";
     JavascriptExecutor jse;
     Formation currentFormation;
+    private final Integer GAMEWEEKS_PLAYED = 24;
+    HashMap<String, Player> allPlayers = new HashMap<>();
 
-    public void getLeagueInformation(){
-        driver.get("https://fantasy.premierleague.com/leagues/30013/standings/c");
+    public void getManagerGameweekInformation(Integer gameweek, TeamManager manager) {
+        driver.get("https://fantasy.premierleague.com/entry/" + manager.getId() + "/event/" + gameweek);
+        Integer points = Integer.parseInt(driver.findElement(By.className("EntryEvent__PrimaryValue-l17rqm-4")).getText().split("\n")[0]);
+        Integer transfers = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[2]/div[2]/div/a")).getText());
+        Integer rank = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[2]/div[2]/div/a")).getText());
+        List<Player> pitchTeam = getPitchTeam();
+        manager.addManagerGameweek(new ManagerGameweek(points, rank, transfers, pitchTeam, pitchTeam.get(0)));
+    }
+
+    public void getPlayerGameweekAllInformation(String playerName, Integer gameweekNumber) {
+        List<PlayerGameweek> playerStatistic = new ArrayList<>();
+        clickTab("Transfers");
+        WebElement search = driver.findElement(By.id("search"));
+        search.clear();
+        search.sendKeys(playerName);
+        driver.findElement(By.className("kGMjuJ")).findElement(By.xpath("//td[1]/button")).click();
+        Integer minutesPlayed = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[4]")).getText());
+        if (minutesPlayed == 0) {
+            System.out.println(playerName + " nie grał w kolejce numer " + gameweekNumber);
+        } else {
+            List<WebElement> body = driver.findElements(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr"));
+
+            Integer points = Integer.parseInt((driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[3]")).getText()));
+            Integer goals = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[5]")).getText());
+            Integer asissts = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[6]")).getText());
+            Integer cleanSheets = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[7]")).getText());
+            Integer goalsConceded = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[8]")).getText());
+            Integer ownGoals = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[9]")).getText());
+            Integer penaltiesSaved = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[10]")).getText());
+            Integer penaltiesMissed = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[11]")).getText());
+            Integer yellowCards = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[12]")).getText());
+            Integer redCards = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[13]")).getText());
+            Integer saves = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[14]")).getText());
+            Integer bonus = Integer.parseInt(driver.findElement(By.xpath("//div[@role='document']/div[2]/div[2]/div/div/div[1]/div/table/tbody/tr[" + gameweekNumber + "]/td[15]")).getText());
+            playerStatistic.add(new PlayerGameweek(points, minutesPlayed, goals, asissts, cleanSheets, yellowCards, redCards, penaltiesSaved, penaltiesMissed, bonus, saves, ownGoals, gameweekNumber, goalsConceded));
+        }
+    }
+
+    public void getLeagueInformation(Integer leagueNumber) {
+        driver.get("https://fantasy.premierleague.com/leagues/" + leagueNumber + "/standings/c");
         String leagueName = driver.findElement(By.className("Title-sc-9c7mfn-0")).getText();
         List<FplLeague> teamList = new ArrayList<>();
         List<WebElement> leagueTable = driver.findElements(By.className("StandingsRow-fwk48s-0"));
@@ -42,7 +82,7 @@ public class FplUtils {
             Integer rank = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td/div/div")).getText());
             Integer gameweekPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[3]")).getText());
             String managerName = driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[2]")).getText().split("\n")[1];
-                    teamList.add(new FplLeague(leagueName,teamName,rank,gameweekPoints,totalPoints,managerName));
+            teamList.add(new FplLeague(leagueName, teamName, rank, gameweekPoints, totalPoints, managerName));
         }
     }
 
@@ -67,6 +107,11 @@ public class FplUtils {
             Integer totalPoints = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[4]")).getText());
             String id = driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div/table/tbody/tr[" + (i + 1) + "]/td[2]/a")).getAttribute("href").split("/")[4];
             teamManagerList.add(new TeamManager(teamName, managerName, totalPoints, id));
+        }
+        for (int managerIndex = 0; managerIndex < leagueTable.size(); managerIndex++) {
+            for (int gameweekIndex = 1; gameweekIndex <= GAMEWEEKS_PLAYED; gameweekIndex++) {
+                getManagerGameweekInformation(gameweekIndex, teamManagerList.get(managerIndex));
+            }
         }
     }
 
@@ -145,18 +190,20 @@ public class FplUtils {
     public FplUtils(WebDriver driver) {
         this.driver = driver;
         this.jse = (JavascriptExecutor) driver;
-       /* initiateTabIndexes();
-        initiatePlayerSelectBy();
+        initiateTabIndexes();
+        /*initiatePlayerSelectBy();
         positionsIndexes.put(GOALKEEPER, Arrays.asList(2, 3));
         positionsIndexes.put(DEFENDER, Arrays.asList(1, 2, 3, 4, 5));
         positionsIndexes.put(MIDFIELDER, Arrays.asList(1, 2, 3, 4, 5));
         positionsIndexes.put(FORWARD, Arrays.asList(1, 2, 3));
         formationsOrder = Arrays.asList(GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD);
         initiateTeam();
-        getTeam();
-        getAllManagersAllGameweeksInfo();*/
-        //getGameweekInfo(23);
-        getLeagueInformation();
+        getTeam();*/
+        getAllManagersAllGameweeksInfo();
+        getGameweekInfo(23);
+        getLeagueInformation(30013);
+        getPlayerGameweekAllInformation("Sterling", 9);
+
     }
 
     private void initiateTeam() {
@@ -215,6 +262,21 @@ public class FplUtils {
         }
     }
 
+    private List<Player> getListVievTeam() {
+        List<Player> playersGameweek = new ArrayList<>();
+        /**
+         * 1. zmienic na list viev
+         * 2. znajdz wszystkie tr findelements by xpatch /tr
+         * for po webelementach findelements by tagname(td)
+         *      zanjduje nazwe gracza
+         *      sprawdzam czy taki gracz istnieje hashmap.get jesni nie to tworze nowego Player player = new player i dodaje do hashmap.put(nazwa gracza, Player)
+         *      player.addPlayerGameweek(wszystkie dane pobrane z td)
+         *
+         *
+         */
+        return playersGameweek;
+    }
+
     private List<Player> getPitchTeam() {
         WebElement pitch = driver.findElement(By.xpath("//div[@data-testid='pitch']"));
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -229,24 +291,34 @@ public class FplUtils {
         List<Player> team = new ArrayList<>();
         String goalkeeperName = goalkeeperDivs.get(2).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
         Integer goalkeeperPoints = Integer.parseInt(goalkeeperDivs.get(2).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
-        team.add(new Player(goalkeeperName, GOALKEEPER, goalkeeperPoints));
+        Player player = new Player(goalkeeperName, GOALKEEPER);
+        player.addPlayerGameweek(new PlayerGameweek(goalkeeperPoints, 1));
+        team.add(new Player(goalkeeperName, GOALKEEPER));
+
 
         for (int i = 0; i < currentFormation.getDefenders(); i++) {
             String playerName = defendersDivs.get(i).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
-            Integer defenderPoints = Integer.parseInt(defendersDivs.get(i).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
-            team.add(new Player(playerName, DEFENDER, defenderPoints));
+            String value = defendersDivs.get(i).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0];
+            Integer defenderPoints = Integer.parseInt(value);
+            player = new Player(goalkeeperName, GOALKEEPER);
+            player.addPlayerGameweek(new PlayerGameweek(defenderPoints, 1));
+            team.add(new Player(playerName, DEFENDER));
         }
 
         for (int i = 0; i < currentFormation.getMidfielders(); i++) {
             String playerName = midfieldersDivs.get(currentFormation.getMidfieldersIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
             Integer midfielderPoints = Integer.parseInt(midfieldersDivs.get(currentFormation.getMidfieldersIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
-            team.add(new Player(playerName, MIDFIELDER, midfielderPoints));
+            player = new Player(goalkeeperName, GOALKEEPER);
+            player.addPlayerGameweek(new PlayerGameweek(midfielderPoints, 1));
+            team.add(new Player(playerName, MIDFIELDER));
         }
 
         for (int i = 0; i < currentFormation.getForwards(); i++) {
             String playerName = forwardsDivs.get(currentFormation.getForwardsIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementName-sc-1u4y6pr-0")).getText();
             Integer forwardPoints = Integer.parseInt(forwardsDivs.get(currentFormation.getForwardsIndexes().get(i) - 1).findElement(By.className("PitchElementData__ElementValue-sc-1u4y6pr-1")).getText().split(",")[0]);
-            team.add(new Player(playerName, FORWARD, forwardPoints));
+            player = new Player(goalkeeperName, GOALKEEPER);
+            player.addPlayerGameweek(new PlayerGameweek(forwardPoints, 1));
+            team.add(new Player(playerName, FORWARD));
         }
         return team;
     }

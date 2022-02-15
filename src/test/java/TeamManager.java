@@ -1,10 +1,14 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class TeamManager {
     private String teamName;
     private String managerName;
     private Integer totalPoints;
     private String id;
+    private List<ManagerGameweek> managerGameweeks = new ArrayList<>();
 
-    public TeamManager(String teamName, String managerName,  Integer totalPoints, String id) {
+    public TeamManager(String teamName, String managerName, Integer totalPoints, String id) {
         this.teamName = teamName;
         this.managerName = managerName;
         this.totalPoints = totalPoints;
@@ -41,5 +45,10 @@ public class TeamManager {
 
     public void setTotalPoints(Integer totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    public void addManagerGameweek(ManagerGameweek managerGameweek){
+        managerGameweeks.add(managerGameweek);
+
     }
 }

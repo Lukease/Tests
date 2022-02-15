@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
@@ -7,8 +8,8 @@ public class Player {
     private String club;
     private int playerIndex;
     private int overallPoints;
-    private List<PlayerGameweek> gameweekStatistics;
-    private int gameweekPoints;
+    private List<PlayerGameweek> gameweekStatistics = new ArrayList<>();
+
 
     public int getPlayerIndex() {
         return playerIndex;
@@ -26,18 +27,9 @@ public class Player {
         this.playerIndex = playerIndex;
     }
 
-    public Player(String name, String position,  int gameweekPoints) {
+    public Player(String name, String position) {
         this.name = name;
         this.position = position;
-        this.gameweekPoints = gameweekPoints;
-    }
-
-    public int getGameweekPoints() {
-        return gameweekPoints;
-    }
-
-    public void setGameweekPoints(int gameweekPoints) {
-        this.gameweekPoints = gameweekPoints;
     }
 
     public double getPrice() {
@@ -70,5 +62,10 @@ public class Player {
 
     public void setClub(String club) {
         this.club = club;
+    }
+
+    public void addPlayerGameweek(PlayerGameweek playerGameweek){
+        gameweekStatistics.add(playerGameweek);
+
     }
 }

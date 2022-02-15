@@ -6,14 +6,15 @@ public class PlayerGameweek {
     private Integer cleanSheets;
     private Integer yellowCards;
     private Integer redCard;
-    private Integer penaltySaves;
+    private Integer penaltySaved;
     private Integer penaltyMissed;
     private Integer bonus;
     private Integer saves;
     private Integer ownGoal;
-    private Gameweek gameweek;
+    private Integer gameweek;
+    private Integer goalsConceded;
 
-    public PlayerGameweek(Integer points, Integer minutes, Integer goals, Integer assists, Integer cleanSheets, Integer yellowCards, Integer redCard, Integer penaltySaves, Integer penaltyMissed, Integer bonus, Integer saves, Integer ownGoal, Gameweek gameweek) {
+    public PlayerGameweek(Integer points, Integer minutes, Integer goals, Integer assists, Integer cleanSheets, Integer yellowCards, Integer redCard, Integer penaltySaved, Integer penaltyMissed, Integer bonus, Integer saves, Integer ownGoal, Integer gameweek, Integer goalsConceded) {
         this.points = points;
         this.minutes = minutes;
         this.goals = goals;
@@ -21,12 +22,26 @@ public class PlayerGameweek {
         this.cleanSheets = cleanSheets;
         this.yellowCards = yellowCards;
         this.redCard = redCard;
-        this.penaltySaves = penaltySaves;
+        this.penaltySaved = penaltySaved;
         this.penaltyMissed = penaltyMissed;
         this.bonus = bonus;
         this.saves = saves;
         this.ownGoal = ownGoal;
         this.gameweek = gameweek;
+        this.goalsConceded = goalsConceded;
+    }
+
+    public PlayerGameweek(Integer points, Integer gameweek) {
+        this.points = points;
+        this.gameweek = gameweek;
+    }
+
+    public Integer getGoalsConceded() {
+        return goalsConceded;
+    }
+
+    public void setGoalsConceded(Integer goalsConceded) {
+        this.goalsConceded = goalsConceded;
     }
 
     public Integer getPoints() {
@@ -85,12 +100,12 @@ public class PlayerGameweek {
         this.redCard = redCard;
     }
 
-    public Integer getPenaltySaves() {
-        return penaltySaves;
+    public Integer getPenaltySaved() {
+        return penaltySaved;
     }
 
-    public void setPenaltySaves(Integer penaltySaves) {
-        this.penaltySaves = penaltySaves;
+    public void setPenaltySaved(Integer penaltySaved) {
+        this.penaltySaved = penaltySaved;
     }
 
     public Integer getPenaltyMissed() {
@@ -125,11 +140,11 @@ public class PlayerGameweek {
         this.ownGoal = ownGoal;
     }
 
-    public Gameweek getGameweek() {
+    public Integer getGameweek() {
         return gameweek;
     }
 
-    public void setGameweek(Gameweek gameweek) {
+    public void setGameweek(Integer gameweek) {
         this.gameweek = gameweek;
     }
 }

@@ -5,12 +5,22 @@ public class ManagerGameweek {
     private Integer rank;
     private Integer transfersMade;
     private List<Player> team;
+    private Player captain;
 
-    public ManagerGameweek(Integer points, Integer rank, Integer transfersMade, List<Player> team) {
+    public ManagerGameweek(Integer points, Integer rank, Integer transfersMade, List<Player> team, Player captain) {
         this.points = points;
         this.rank = rank;
         this.transfersMade = transfersMade;
         this.team = team;
+        this.captain = captain;
+    }
+
+    public Player getCaptain() {
+        return captain;
+    }
+
+    public void setCaptain(Player captain) {
+        this.captain = captain;
     }
 
     public Integer getPoints() {
