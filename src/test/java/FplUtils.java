@@ -4,6 +4,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -32,13 +33,14 @@ public class FplUtils {
     Formation currentFormation;
     private final Integer GAMEWEEKS_PLAYED = 24;
     HashMap<String, Player> allPlayers = new HashMap<>();
+    private Constants constants = new Constants();
 
     public void getManagerGameweekInformation(Integer gameweek, TeamManager manager) {
         driver.get("https://fantasy.premierleague.com/entry/" + manager.getId() + "/event/" + gameweek);
         Integer points = Integer.parseInt(driver.findElement(By.className("EntryEvent__PrimaryValue-l17rqm-4")).getText().split("\n")[0]);
         Integer transfers = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[2]/div[2]/div/a")).getText());
         Integer rank = Integer.parseInt(driver.findElement(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[3]/div/div[2]/div[2]/div[2]/div/a")).getText());
-        List<Player> pitchTeam = getPitchTeam();
+        List<Player> pitchTeam = getListViewTeam(gameweek);
         manager.addManagerGameweek(new ManagerGameweek(points, rank, transfers, pitchTeam, pitchTeam.get(0)));
     }
 
@@ -262,18 +264,46 @@ public class FplUtils {
         }
     }
 
-    private List<Player> getListVievTeam() {
+    private List<Player> getListViewTeam(Integer gameweek) {
         List<Player> playersGameweek = new ArrayList<>();
-        /**
-         * 1. zmienic na list viev
-         * 2. znajdz wszystkie tr findelements by xpatch /tr
-         * for po webelementach findelements by tagname(td)
-         *      zanjduje nazwe gracza
-         *      sprawdzam czy taki gracz istnieje hashmap.get jesni nie to tworze nowego Player player = new player i dodaje do hashmap.put(nazwa gracza, Player)
-         *      player.addPlayerGameweek(wszystkie dane pobrane z td)
-         *
-         *
-         */
+        driver.findElement(By.className("xSQCR")).click();
+        List<WebElement> table = driver.findElements(By.xpath("//div[@id='root']/div[2]/div[2]/div[1]/div[4]/div/div/div/div/div[1]/table/tbody/tr"));
+        for (int i = 0; i <= table.size(); i++) {
+            List<WebElement> attributes = table.get(i).findElements(By.tagName("td"));
+            String name = attributes.get(2).findElement(By.className("dwvEEF")).getText();
+            Player player;
+            if (allPlayers.containsKey(name)) {
+                player = allPlayers.get(name);
+
+            } else {
+                List<WebElement> spans = attributes.get(2).findElements(By.tagName("span"));
+                String club = constants.getClubByShortcut(spans.get(0).getText());
+                String position = constants.getPositionByShortcut(spans.get(1).getText());
+                player = new Player(name, position, club);
+                allPlayers.put(name, player);
+            }
+            if (player.getPlayerGameweek(gameweek) == null) {
+                boolean isCaptain = !attributes.get(1).findElements(By.className("guYEoa")).isEmpty();
+                int points = Integer.parseInt(attributes.get(3).getText());
+                if (isCaptain) {
+                    points = points / 2;
+                }
+                Integer minutes = Integer.parseInt(attributes.get(4).getText());
+                Integer goals = Integer.parseInt(attributes.get(5).getText());
+                Integer assists = Integer.parseInt(attributes.get(6).getText());
+                Integer cleanSheets = Integer.parseInt(attributes.get(7).getText());
+                Integer goalsConceded = Integer.parseInt(attributes.get(8).getText());
+                Integer ownGoals = Integer.parseInt(attributes.get(9).getText());
+                Integer penaltiesSaved = Integer.parseInt(attributes.get(10).getText());
+                Integer penaltiesMissed = Integer.parseInt(attributes.get(11).getText());
+                Integer yellowCards = Integer.parseInt(attributes.get(12).getText());
+                Integer redCards = Integer.parseInt(attributes.get(13).getText());
+                Integer saves = Integer.parseInt(attributes.get(14).getText());
+                Integer bonus = Integer.parseInt(attributes.get(15).getText());
+
+                player.addPlayerGameweek(new PlayerGameweek(points, minutes, goals, assists, cleanSheets, yellowCards, redCards, penaltiesSaved, penaltiesMissed, bonus, saves, ownGoals, gameweek, goalsConceded));
+            }
+        }
         return playersGameweek;
     }
 

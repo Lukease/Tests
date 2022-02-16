@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Player {
@@ -8,7 +9,7 @@ public class Player {
     private String club;
     private int playerIndex;
     private int overallPoints;
-    private List<PlayerGameweek> gameweekStatistics = new ArrayList<>();
+    private HashMap<Integer, PlayerGameweek> gameweekStatistics = new HashMap<>();
 
 
     public int getPlayerIndex() {
@@ -25,6 +26,11 @@ public class Player {
         this.position = position;
         this.club = club;
         this.playerIndex = playerIndex;
+    }
+    public Player( String name, String position, String club) {
+        this.name = name;
+        this.position = position;
+        this.club = club;
     }
 
     public Player(String name, String position) {
@@ -65,7 +71,10 @@ public class Player {
     }
 
     public void addPlayerGameweek(PlayerGameweek playerGameweek){
-        gameweekStatistics.add(playerGameweek);
+        gameweekStatistics.put(playerGameweek.getGameweek(), playerGameweek);
+    }
 
+    public PlayerGameweek getPlayerGameweek(Integer gameweekNumber){
+        return gameweekStatistics.getOrDefault(gameweekNumber, null);
     }
 }
